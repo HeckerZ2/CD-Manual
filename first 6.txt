@@ -1,0 +1,158 @@
+1. Design a Lexical Analyzer in LEX to Recognize Patterns in C
+
+%{
+#include<stdio.h>
+#include<string.h>
+%}
+
+%%
+int             { printf("Keyword: int\n"); }
+float           { printf("Keyword: float\n"); }
+if|else         { printf("Keyword: %s\n", yytext); }
+[a-zA-Z_][a-zA-Z0-9_]* { printf("Identifier: %s\n", yytext); }
+[0-9]+          { printf("Number: %s\n", yytext); }
+"+"|"-"|"*"|"/" { printf("Operator: %s\n", yytext); }
+";"             { printf("Semicolon\n"); }
+[ \t\n]         { /* Ignore whitespace */ }
+.               { printf("Unknown character: %s\n", yytext); }
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+2. Calculator Using LEX and YACC
+
+LEX File (calc.l)
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+[0-9]+          { yylval = atoi(yytext); return NUMBER; }
+"+"             { return PLUS; }
+"-"             { return MINUS; }
+"*"             { return MUL; }
+"/"             { return DIV; }
+"("             { return LPAREN; }
+")"             { return RPAREN; }
+\n              { return END; }
+[ \t]           { /* Ignore whitespace */ }
+.               { return yytext[0]; }
+%%
+
+YACC File (calc.y)
+
+%{
+#include<stdio.h>
+#include<stdlib.h>
+%}
+
+%token NUMBER
+%token PLUS MINUS MUL DIV
+%token LPAREN RPAREN
+%token END
+
+%%
+calculation: expr END { printf("Result: %d\n", $1); }
+           ;
+
+expr: expr PLUS term { $$ = $1 + $3; }
+    | expr MINUS term { $$ = $1 - $3; }
+    | term
+    ;
+
+term: term MUL factor { $$ = $1 * $3; }
+    | term DIV factor { $$ = $1 / $3; }
+    | factor
+    ;
+
+factor: NUMBER
+      | LPAREN expr RPAREN
+      ;
+%%
+
+int main() {
+    printf("Enter an expression:\n");
+    yyparse();
+    return 0;
+}
+
+int yyerror(char *s) {
+    printf("Error: %s\n", s);
+    return 0;
+}
+
+
+3. Recognize a Valid Variable Name
+
+%{
+#include<stdio.h>
+%}
+
+%%
+[a-zA-Z_][a-zA-Z0-9_]*  { printf("Valid Variable Name: %s\n", yytext); }
+[^a-zA-Z0-9_]           { printf("Invalid Variable Name: %s\n", yytext); }
+%%
+int main() {
+    printf("Enter variable names (Ctrl+D to exit):\n");
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+4. Convert Substring abc to ABC
+
+%{
+#include<stdio.h>
+%}
+
+%%
+abc     { printf("ABC"); }
+.       { printf("%s", yytext); }
+\n      { printf("\n"); }
+%%
+int main() {
+    printf("Enter a string (Ctrl+D to exit):\n");
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+5. Recognize a Valid Arithmetic Expression
+
+%{
+#include<stdio.h>
+%}
+
+%%
+[0-9]+          { printf("Number: %s\n", yytext); }
+"+"|"-"|"*"|"/" { printf("Operator: %s\n", yytext); }
+"("             { printf("Left Parenthesis\n"); }
+")"             { printf("Right Parenthesis\n"); }
+[ \t\n]         { /* Ignore whitespace */ }
+.               { printf("Invalid Character: %s\n", yytext); }
+%%
+int main() {
+    printf("Enter an arithmetic expression:\n");
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}

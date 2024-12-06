@@ -1,0 +1,243 @@
+7. Implement NFAs Recognizing Identifiers, Constants, and Operators
+
+This requires creating an NFA simulation in C:
+
+#include <stdio.h>
+#include <ctype.h>
+
+void checkNFA(char *str) {
+    int i = 0, state = 0;
+
+    while (str[i] != '\0') {
+        switch (state) {
+            case 0:
+                if (isalpha(str[i]))
+                    state = 1;  // Identifier
+                else if (isdigit(str[i]))
+                    state = 2;  // Constant
+                else if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '/')
+                    state = 3;  // Operator
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 1:
+                if (isalnum(str[i]))
+                    state = 1;  // Stay as identifier
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 2:
+                if (isdigit(str[i]))
+                    state = 2;  // Stay as constant
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 3:
+                state = -1;  // Operators are single character
+                break;
+
+            default:
+                printf("Invalid input: %s\n", str);
+                return;
+        }
+        i++;
+    }
+
+    if (state == 1)
+        printf("Valid Identifier: %s\n", str);
+    else if (state == 2)
+        printf("Valid Constant: %s\n", str);
+    else if (state == 3)
+        printf("Valid Operator: %s\n", str);
+    else
+        printf("Invalid input: %s\n", str);
+}
+
+int main() {
+    char input[100];
+    printf("Enter a string: ");
+    scanf("%s", input);
+    checkNFA(input);
+    return 0;
+}
+
+
+
+8. Implement DFAs for Identifiers, Constants, and Operators
+
+The DFA structure is similar to NFAs but requires strict deterministic transitions:
+
+#include <stdio.h>
+#include <ctype.h>
+
+void checkDFA(char *str) {
+    int i = 0, state = 0;
+
+    while (str[i] != '\0') {
+        switch (state) {
+            case 0:
+                if (isalpha(str[i]))
+                    state = 1;  // Identifier
+                else if (isdigit(str[i]))
+                    state = 2;  // Constant
+                else if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '/')
+                    state = 3;  // Operator
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 1:
+                if (isalnum(str[i]))
+                    state = 1;  // Stay as identifier
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 2:
+                if (isdigit(str[i]))
+                    state = 2;  // Stay as constant
+                else
+                    state = -1;  // Invalid
+                break;
+
+            case 3:
+                state = -1;  // Operators are single character
+                break;
+
+            default:
+                printf("Invalid input: %s\n", str);
+                return;
+        }
+        i++;
+    }
+
+    if (state == 1)
+        printf("Valid Identifier: %s\n", str);
+    else if (state == 2)
+        printf("Valid Constant: %s\n", str);
+    else if (state == 3)
+        printf("Valid Operator: %s\n", str);
+    else
+        printf("Invalid input: %s\n", str);
+}
+
+int main() {
+    char input[100];
+    printf("Enter a string: ");
+    scanf("%s", input);
+    checkDFA(input);
+    return 0;
+}
+
+
+---
+
+9. Code Optimization Using Constant Folding
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void constantFolding(char *expr) {
+    int result = 0, num1 = 0, num2 = 0;
+    char op;
+
+    sscanf(expr, "%d %c %d", &num1, &op, &num2);
+
+    switch (op) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '*': result = num1 * num2; break;
+        case '/': result = num1 / num2; break;
+        default: printf("Invalid expression\n"); return;
+    }
+
+    printf("Original Expression: %s\n", expr);
+    printf("Optimized Expression: %d\n", result);
+}
+
+int main() {
+    char expr[100];
+    printf("Enter a constant expression (e.g., 4 + 5): ");
+    fgets(expr, 100, stdin);
+    constantFolding(expr);
+    return 0;
+}
+
+
+---
+10.8086
+
+Updated Code:
+c
+Copy code
+#include <stdio.h>
+#include <string.h>
+
+void generateAssembly(char *code) {
+    char op[10], arg1[10], arg2[10], res[10];
+
+    // Arithmetic operations (e.g., t1 = a + b)
+    if (sscanf(code, "%s = %s %s %s", res, arg1, op, arg2) == 4) {
+        printf("MOV AX, %s\n", arg1);
+        if (strcmp(op, "+") == 0) printf("ADD AX, %s\n", arg2);
+        else if (strcmp(op, "-") == 0) printf("SUB AX, %s\n", arg2);
+        printf("MOV %s, AX\n", res);
+    }
+    // Assignment (e.g., t1 = a)
+    else if (sscanf(code, "%s = %s", res, arg1) == 2) {
+        printf("MOV %s, %s\n", res, arg1);
+    }
+    // Unconditional jump (e.g., goto L2)
+    else if (sscanf(code, "goto %s", res) == 1) {
+        printf("JMP %s\n", res);
+    }
+    else {
+        printf("Unsupported code\n");
+    }
+}
+
+int main() {
+    int n;
+    char code[100];
+
+    printf("Enter number of lines of code: ");
+    scanf("%d", &n);
+    getchar(); // to clear the newline left by scanf
+
+    printf("Enter the three-address code:\n");
+    for (int i = 0; i < n; i++) {
+        fgets(code, sizeof(code), stdin);
+        code[strcspn(code, "\n")] = '\0';  // Remove newline
+        generateAssembly(code);
+    }
+
+    return 0;
+}
+
+11.Write a lex program to find out total number of vowels, and consonants from the given input 
+sting
+
+
+%{
+#include <stdio.h>
+
+int vowels = 0;
+int consonants = 0;
+%}
+
+%%
+[aeiouAEIOU]   { vowels++; }   /* Counting vowels */
+[b-df-hj-np-tv-zB-DF-HJ-NP-TV-Z] { consonants++; }   /* Counting consonants */
+.|\n            ;   /* Ignore other characters (e.g., punctuation, whitespace) */
+%%
+
+int main() {
+    yylex();   /* Start scanning the input */
+    printf("Total Vowels: %d\n", vowels);
+    printf("Total Consonants: %d\n", consonants);
+    return 0;
+}
